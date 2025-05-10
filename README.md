@@ -1,3 +1,14 @@
+---
+title: Jobconnect
+emoji: 💻
+colorFrom: red
+colorTo: purple
+sdk: docker
+pinned: false
+---
+
+Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+
 # JobConnect-ML
 
 JobConnect-ML is a machine learning-powered backend service that extracts and matches skills from resumes using NLP. It is built with FastAPI and integrates with AI models for skill extraction.
