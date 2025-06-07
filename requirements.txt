@@ -6,4 +6,4 @@ requests
 pydantic
 google-generativeai
 python-dotenv
-https://huggingface.co/JeswinMS4/en_resume_ner/resolve/main/en_resume_ner-any-py3-none-any.whl
+scikit-learn

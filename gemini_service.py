@@ -29,7 +29,7 @@ Example response:
 USER: Here is the posting: ```{summary}```
 AI:"""
 
-    model = genai.GenerativeModel("models/gemini-1.5-pro-latest")
+    model = genai.GenerativeModel("gemini-1.5-flash-latest")
 
     try:
         response = model.generate_content(input_message)
