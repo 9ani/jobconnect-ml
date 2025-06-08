@@ -59,13 +59,21 @@ def calculate_skill_similarity(skill1: str, skill2: str) -> float:
     # Combine similarities with weights
     combined_sim = (semantic_sim * 0.5 + string_sim * 0.3 + tfidf_sim * 0.2)
     
-    # Ensure minimum similarity of 0.4 for related skills
-    return max(0.4, combined_sim)
+    # Boost score for related skills
+    if combined_sim > 0.1:  # Lower threshold for related skills
+        # If skills are semantically related
+        if semantic_sim > 0.2:
+            combined_sim = max(combined_sim, 0.8)
+        # If skills share common words or are part of the same domain
+        elif string_sim > 0.2:
+            combined_sim = max(combined_sim, 0.7)
+    
+    return combined_sim
 
 def analyze_skill_relationships(resume_skills: Set[str], job_requirements: Set[str]) -> float:
     """Analyze relationships between skills using semantic similarity"""
     if not resume_skills or not job_requirements:
-        return 0.5  # Default to 50% if no skills to compare
+        return 0.0
     
     # Convert sets to lists for processing
     resume_list = list(resume_skills)
@@ -82,19 +90,22 @@ def analyze_skill_relationships(resume_skills: Set[str], job_requirements: Set[s
                 similarities.append(sim)
     
     if not similarities:
-        return 0.5
+        return 0.0
     
     # Calculate average similarity and adjust for skill coverage
     avg_similarity = sum(similarities) / len(similarities)
     skill_coverage = min(len(resume_skills) / len(job_requirements), 1.0)
     
-    # Combine similarity and coverage
-    return max(0.4, avg_similarity * 0.7 + skill_coverage * 0.3)
+    # Boost score for having related skills
+    if skill_coverage > 0.1:  # Lower threshold
+        avg_similarity = max(avg_similarity, 0.8)
+    
+    return avg_similarity * 0.5 + skill_coverage * 0.5
 
 def compare_skills(resume_skills: Set[str], job_requirements: Set[str]) -> Tuple[Dict[str, str], float]:
     """Compare skills with a sophisticated scoring system"""
-    if not job_requirements:
-        return {}, 50.0  # Default to 50% if no requirements provided
+    if not job_requirements or not resume_skills:
+        return {}, 0.0
     
     job_requirements = {skill.lower() for skill in job_requirements}
     resume_skills = {skill.lower() for skill in resume_skills}
@@ -102,6 +113,8 @@ def compare_skills(resume_skills: Set[str], job_requirements: Set[str]) -> Tuple
     # Calculate individual skill matches
     skill_scores = {}
     total_score = 0
+    matched_skills = 0
+    core_skills = 0
     
     for job_skill in job_requirements:
         best_match_score = 0
@@ -114,19 +127,31 @@ def compare_skills(resume_skills: Set[str], job_requirements: Set[str]) -> Tuple
                 best_match = resume_skill
         
         skill_scores[job_skill] = best_match_score
+        if best_match_score > 0.1:  # Lower threshold for matches
+            matched_skills += 1
+            if best_match_score == 1.0:  # Exact match
+                core_skills += 1
         total_score += best_match_score
     
-    # Calculate base match percentage
+    # Calculate base match percentage with higher weight for core skills
     base_match = (total_score / len(job_requirements)) * 100
     
     # Analyze skill relationships
     relationship_score = analyze_skill_relationships(resume_skills, job_requirements)
     
-    # Calculate final score with relationship adjustment
-    adjusted_score = base_match * (0.7 + relationship_score * 0.3)
+    # Calculate final score with relationship adjustment and core skill boost
+    core_skill_ratio = core_skills / len(job_requirements)
+    adjusted_score = base_match * (0.5 + relationship_score * 0.3 + core_skill_ratio * 0.2)
     
-    # Ensure minimum score of 40%
-    final_score = max(40.0, min(100.0, adjusted_score))
+    # Only return 0% if there are absolutely no matches
+    if matched_skills == 0:
+        final_score = 0.0
+    else:
+        # Boost score based on number of matched skills
+        match_ratio = matched_skills / len(job_requirements)
+        if match_ratio > 0.1:  # Lower threshold for boost
+            adjusted_score *= 2.0  # Higher boost for related skills
+        final_score = max(10.0, min(100.0, adjusted_score))
     
     # Create comparison dictionary with detailed feedback
     comparison = {
