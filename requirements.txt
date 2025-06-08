@@ -6,4 +6,5 @@ PyMuPDF==1.23.6
 requests==2.31.0
 python-dotenv==1.0.0
 google-generativeai==0.5.2
+scikit-learn
 en-resume-ner @ https://huggingface.co/JeswinMS4/en_resume_ner/resolve/main/en_resume_ner-any-py3-none-any.whl
